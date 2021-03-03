@@ -11,30 +11,72 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Uploading Data
 ```{r}
+library(dplyr)
+library(classdata)
+library(ggplot2)
+
 #Shows warnings?
 dat <- readxl::read_xls('C:\\Users\\kmyti\\OneDrive\\Desktop\\excel_files_202\\GSS.xls')
+```
+
+```{r}
+#Renaming Columns & Cleaning
+dat1 <- rename(dat, 'work_hours' = 'Number of hours usually work a week',
+               'marital' = 'Marital status',
+               'education' = 'Highest year of school completed',
+               'gender' = 'Respondents sex',
+               'num_household' = 'Number of persons in household',
+               'party_affiliation' = 'Political party affiliation',
+               'happiness' = 'General happiness')
+
+dat1 <- dat1 %>%
+    mutate(work_hours = factor(work_hours)) %>%
+    mutate(education = as.numeric(education)) %>%
+    mutate(happiness = factor(happiness)) %>%
+    mutate(marital = factor(marital)) %>%
+    mutate(party_affiliation = factor(party_affiliation)) %>%
+    mutate(gender = factor(gender))
 ```
 
 ##### 1. Find the average years of education for the respondents with each marital status. Arrange your output in a meaningful order and print. Describe any patterns you find.
 
 ```{r}
+dat1$marital <- factor(dat1$marital, levels = (c("Widowed", "Separated", "Married", "Divorced", "Never married", "No answer")))
 
+dat2 <- dat1 %>%
+    group_by(marital) %>%
+    summarise(education_mean = mean(education, na.rm = TRUE)) %>%
+    arrange(education_mean)
+
+dat2
 ```
-
+It looks like the average for most people is around 11 to 13. The people who had the highest average years of education were those who did not answer. Out of those who did answer, those who never married had the highest average of education completed. Those who are widowed had the lowest average.
 
 ##### 2. Create a single data frame containing records for the better educated respondents with each marital status. A “better educated” respondent is someone who has strictly more years of education than the average among those with the same marital status. Print the structure of the data frame.
 
 ```{r}
+better_educated <- dat1 %>%
+    select(marital, education) %>%
+    group_by(marital) %>%
+    filter(education > mean(education, na.rm = TRUE)) %>%
+    arrange(education)
 
+str(better_educated)
 ```
 
 
 ##### 3. How is the happiness of a respondent related to his/her marriage status? Define that a person is happy if the response to question is “Very happy” or “Pretty happy”.
 
 ```{r}
+marital_happiness <- dat1 %>%
+    select(marital, happiness) %>%
+    group_by(marital) %>%
+    count(happiness) %>%
+    arrange(desc(marital), happiness)
 
+marital_happiness
 ```
-
+It looks like those who are happy are those that are married, with over 29000 people saying they are "very/pretty happy". We see that for every marital category, a lot of people are happy more than not, meaning they are okay with their marital status right now.
 
 ##### 4. Does party affiliation affect the relationship you found in the last question?
 
@@ -46,13 +88,28 @@ dat <- readxl::read_xls('C:\\Users\\kmyti\\OneDrive\\Desktop\\excel_files_202\\G
 ##### 5. How is marital status related to the education of a respondent? What are possible reasons accounting for the patterns you see?
 
 ```{r}
+educ_marital <- dat1 %>%
+    group_by(marital) %>%
+    summarise(education_mean = mean(education, na.rm = TRUE)) %>%
+    arrange(education_mean)
 
+educ_marital
+
+ggplot(dat1, aes(x = marital, y = education)) + geom_boxplot() + ggtitle("Marital Statuses vs Years of Education")
 ```
 
+If we're looking at the average years of education, all marital statuses look pretty close to each other. I don't think education makes much a difference when it comes to marital status. Those who were never married had the highest average rating of years of education, probably because they wanted to spend more time on school.
 
 ##### 6. Explore two more interesting questions, and answer those questions using the GSS data.
 
+I wanted to know how the number of people in their household affected one's happiness.
+
 ```{r}
+household_happiness <- dat1 %>%
+    group_by(num_household) %>%
+    count(happiness) %>%
+    arrange(desc(happiness))
 
+household_happiness
 ```
-
+Looking at these answers, I see that people are generally happy with fewer than 5 or so people in their household. A factor that I might not have considered was how many people actually had up to 15 people in their household (assuming it's not a lot, so not many people for that answered). But overall, many people responded very happy to having 1-4 people in their home.
