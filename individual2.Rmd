@@ -1,0 +1,76 @@
+---
+title: 'DS 202: Lab 3'
+author: "MyTien Kien; kmytien, Tanner Dunn; tcdunn"
+date: "3/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Uploading Data
+```{r}
+#Shows warnings?
+library(tidyverse)
+dat <- readxl::read_xls('C:/Spring2021/ds202/Lab3/GSS.xls')
+dat1 <- rename(dat, 'work_hours' = 'Number of hours usually work a week',
+               'marital' = 'Marital status',
+               'education' = 'Highest year of school completed',
+               'gender' = 'Respondents sex',
+               'num_household' = 'Number of persons in household',
+               'party_affiliation' = 'Political party affiliation',
+               'happiness' = 'General happiness')
+dat1 <- filter(dat1, education != "No answer")
+
+head(dat1)
+```
+
+##### 1. Find the average years of education for the respondents with each marital status. Arrange your output in a meaningful order and print. Describe any patterns you find.
+
+```{r}
+
+```
+
+
+##### 2. Create a single data frame containing records for the better educated respondents with each marital status. A “better educated” respondent is someone who has strictly more years of education than the average among those with the same marital status. Print the structure of the data frame.
+
+```{r}
+better_educated <- dat1 %>%
+    select(marital, education) %>%
+    group_by(marital) %>%
+    filter(education > mean(education, na.rm = TRUE)) %>%
+    arrange(marital)
+
+str(better_educated)
+
+```
+
+
+##### 3. How is the happiness of a respondent related to his/her marriage status? Define that a person is happy if the response to question is “Very happy” or “Pretty happy”.
+
+```{r}
+
+```
+
+
+##### 4. Does party affiliation affect the relationship you found in the last question?
+
+```{r}
+
+```
+
+
+##### 5. How is marital status related to the education of a respondent? What are possible reasons accounting for the patterns you see?
+
+```{r}
+
+```
+
+
+##### 6. Explore two more interesting questions, and answer those questions using the GSS data.
+
+```{r}
+
+```
+
